@@ -773,6 +773,7 @@ func GetIndex(w http.ResponseWriter, r *http.Request) {
 		articles = append(articles, Article{id, authorId, title, description, updatedAt, createdAt})
 	}
 	rows.Close()
+
 	headerInfo.Current = "new"
 	headerInfo.Write = true
 	render(w, r, http.StatusOK, "index.html", struct {
@@ -829,6 +830,7 @@ func GetTags(w http.ResponseWriter, r *http.Request) {
 		tagNames = append(tagNames, TagName{tagId, name, createdAt})
 	}
 	rows.Close()
+
 	headerInfo.Current = "tags"
 	headerInfo.Write = true
 	render(w, r, http.StatusOK, "tags.html", struct {
@@ -883,6 +885,7 @@ func GetTag(w http.ResponseWriter, r *http.Request) {
 		articleRelateTags = append(articleRelateTags, ArticleRelateTags{articleId, tagId})
 	}
 	rows.Close()
+
 	headerInfo.Current = ""
 	headerInfo.Write = true
 	render(w, r, http.StatusOK, "tag.html", struct {
@@ -937,6 +940,7 @@ func GetMembers(w http.ResponseWriter, r *http.Request) {
 		members = append(members, User{id, nickName, email, passhash})
 	}
 	rows.Close()
+
 	headerInfo.Current = "members"
 	headerInfo.Write = true
 	render(w, r, http.StatusOK, "members.html", struct {
@@ -995,6 +999,7 @@ func GetMember(w http.ResponseWriter, r *http.Request) {
 		articles = append(articles, Article{id, authorId, title, description, updatedAt, createdAt})
 	}
 	rows.Close()
+
 	author := getUser(memberId)
 	headerInfo.Current = "members"
 	headerInfo.Write = true
