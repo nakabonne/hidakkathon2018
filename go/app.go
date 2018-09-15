@@ -150,8 +150,10 @@ func getUser(userID int) *User {
 func getIineCount(articleId int) int {
 	if iineCnt[articleId] == 0 {
 		row := db.QueryRow(`SELECT COUNT(id) as cnt FROM iines WHERE article_id = ?`, articleId)
-		err := row.Scan(iineCnt[articleId])
-		checkErr(err)
+		var cnt int
+		err := row.Scan(&cnt)
+		iineCnt[articleId] = cnt
+		log.Println(err)
 	}
 
 	// row := db.QueryRow(`SELECT COUNT(id) as cnt FROM iines WHERE article_id = ?`, articleId)
