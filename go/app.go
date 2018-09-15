@@ -29,6 +29,10 @@ import (
 )
 
 var (
+	tagCount map[int]int
+)
+
+var (
 	db          *sql.DB
 	store       *sessions.CookieStore
 	redisClient redis.Conn
@@ -154,12 +158,25 @@ func getIineCount(articleId int) int {
 }
 
 func getTagCount(tagId int) int {
-	// TODO
-	row := db.QueryRow(`SELECT COUNT(*) as cnt FROM article_relate_tags WHERE tag_id = ?`, tagId)
-	cnt := new(int)
-	err := row.Scan(cnt)
+	if tagCount != nil {
+		cnt, _ := tagCount[tagId]
+		return cnt
+	}
+
+	tagCount = map[int]int{}
+	rows, err := db.Query("select tag_id as id, count(*) as cnt from article_relate_tags group by tag_id;")
 	checkErr(err)
-	return *cnt
+	defer rows.Close()
+	for rows.Next() {
+		var id int
+		var cnt int
+		err := rows.Scan(&id, &cnt)
+		checkErr(err)
+		tagCount[id] = cnt
+	}
+
+	cnt, _ := tagCount[tagId]
+	return cnt
 }
 
 func getArticle(articleId int) Article {
