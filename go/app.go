@@ -133,6 +133,7 @@ func getCurrentUser(w http.ResponseWriter, r *http.Request) *User {
 		checkErr(ErrAuthentication)
 	}
 	checkErr(err)
+
 	context.Set(r, "user", user)
 	return &user
 }
@@ -161,19 +162,20 @@ func getTagCount(tagId int) int {
 		cnt, _ := tagCount[tagId]
 		return cnt
 	}
-
 	tagCount = map[int]int{}
 	rows, err := db.Query("select tag_id as id, count(*) as cnt from article_relate_tags group by tag_id;")
 	checkErr(err)
+
 	defer rows.Close()
+
 	for rows.Next() {
 		var id int
 		var cnt int
 		err := rows.Scan(&id, &cnt)
 		checkErr(err)
+
 		tagCount[id] = cnt
 	}
-
 	cnt, _ := tagCount[tagId]
 	return cnt
 }
@@ -184,6 +186,7 @@ func getArticle(articleId int) Article {
 	var title, description string
 	var createdAt, updatedAt time.Time
 	checkErr(row.Scan(&id, &authorId, &title, &description, &updatedAt, &createdAt))
+
 	return Article{id, authorId, title, description, updatedAt, createdAt}
 }
 
@@ -217,6 +220,7 @@ func getArticleTagNames(articleId int) []TagName {
 		var createdAt time.Time
 		err := row.Scan(&tagName)
 		checkErr(err)
+
 		tagNames = append(tagNames, TagName{tagId, tagName, createdAt})
 	}
 	rows.Close()
@@ -228,6 +232,7 @@ func getArticleCount(authorId int) int {
 	var cnt int
 	err := row.Scan(&cnt)
 	checkErr(err)
+
 	return cnt
 }
 
@@ -273,6 +278,7 @@ func getPopularArticles() []PopularArticle {
 	for rows.Next() {
 		var articleId, iineCount int
 		checkErr(rows.Scan(&articleId, &iineCount))
+
 		popularArticles = append(popularArticles, PopularArticle{articleId, iineCount})
 	}
 	rows.Close()
@@ -286,6 +292,7 @@ func InsArticle(userId int, title string, tags string, articleBody string, tx *s
 		return "", err
 	}
 	defer stmt.Close()
+
 	result, err := stmt.Exec(userId, title, articleBody)
 	if err != nil {
 		return "", err
@@ -304,6 +311,7 @@ func InsArticle(userId int, title string, tags string, articleBody string, tx *s
 			err := row.Scan(&tagId)
 			if err != sql.ErrNoRows {
 				checkErr(err)
+
 				articleTagIds = append(articleTagIds, tagId)
 			} else {
 				query = "INSERT INTO tags (tagname) VALUES ( ? )"
@@ -322,7 +330,6 @@ func InsArticle(userId int, title string, tags string, articleBody string, tx *s
 				articleTagIds = append(articleTagIds, int(lastArticleTagId))
 			}
 		}
-
 		for _, articleTagId := range articleTagIds {
 			query = "INSERT INTO article_relate_tags (article_id, tag_id) VALUES ( ?, ? )"
 			stmt, err = tx.Prepare(query)
@@ -338,7 +345,6 @@ func InsArticle(userId int, title string, tags string, articleBody string, tx *s
 			}
 		}
 	}
-
 	return strconv.FormatInt(articleId, 10), nil
 }
 
@@ -354,7 +360,6 @@ func UpdArticle(userId int, articleId int, title string, tags string, articleBod
 	if err != nil {
 		return err
 	}
-
 	if tags != "" {
 		tagArray := strings.Split(tags, ",")
 		var articleTagIds []int
@@ -365,6 +370,7 @@ func UpdArticle(userId int, articleId int, title string, tags string, articleBod
 			err := row.Scan(&tagId)
 			if err != sql.ErrNoRows {
 				checkErr(err)
+
 				articleTagIds = append(articleTagIds, tagId)
 			} else {
 				query = "INSERT INTO tags (tagname) VALUES ( ? )"
@@ -383,14 +389,12 @@ func UpdArticle(userId int, articleId int, title string, tags string, articleBod
 				articleTagIds = append(articleTagIds, int(lastArticleTagId))
 			}
 		}
-
 		query := "DELETE FROM article_relate_tags  WHERE article_id = ?"
 		stmt, err := tx.Prepare(query)
 		_, err = stmt.Exec(articleId)
 		if err != nil {
 			return err
 		}
-
 		for _, articleTagId := range articleTagIds {
 			query = "INSERT INTO article_relate_tags (article_id, tag_id) VALUES ( ?, ? )"
 			stmt, err = tx.Prepare(query)
@@ -406,7 +410,6 @@ func UpdArticle(userId int, articleId int, title string, tags string, articleBod
 			}
 		}
 	}
-
 	return nil
 }
 
@@ -460,12 +463,10 @@ func insAndUpdUserPhoto(userId int, photoPath, photoBinary []byte, tx *sql.Tx) e
 			return err
 		}
 	}
-
 	return nil
 }
 
 func updatePassword(userId int, currentPassword string, newPassword string, tx *sql.Tx) string {
-
 	row := db.QueryRow(`SELECT
           COUNT(u.id) AS cnt
         FROM
@@ -482,18 +483,17 @@ func updatePassword(userId int, currentPassword string, newPassword string, tx *
 	if cnt != 1 {
 		return "現在のパスワードが違います"
 	}
-
 	salt := randomString(6)
 	query := "UPDATE users SET passhash = SHA2(CONCAT(?, ?), 512) WHERE id = ?"
 	stmt, _ := tx.Prepare(query)
 	defer stmt.Close()
-	stmt.Exec(newPassword, salt, userId)
 
+	stmt.Exec(newPassword, salt, userId)
 	query = "UPDATE salts SET salt =  ? WHERE user_id = ?"
 	stmt, _ = tx.Prepare(query)
 	defer stmt.Close()
-	stmt.Exec(salt, userId)
 
+	stmt.Exec(salt, userId)
 	return ""
 }
 
@@ -501,6 +501,7 @@ func updateNickName(userId int, nickName string, tx *sql.Tx) {
 	query := "UPDATE users SET nick_name = ? WHERE id = ?"
 	stmt, _ := tx.Prepare(query)
 	defer stmt.Close()
+
 	stmt.Exec(nickName, userId)
 }
 
@@ -508,6 +509,7 @@ func updateEmail(userId int, email string, tx *sql.Tx) {
 	query := "UPDATE users SET email = ? WHERE id = ?"
 	stmt, _ := tx.Prepare(query)
 	defer stmt.Close()
+
 	stmt.Exec(email, userId)
 }
 
@@ -536,6 +538,7 @@ func recoverMiddleware(next http.Handler) http.Handler {
 				}
 			}
 		}()
+
 		next.ServeHTTP(w, r)
 	}
 	return http.HandlerFunc(fn)
@@ -562,6 +565,7 @@ func getSession(r *http.Request) *sessions.Session {
 func setLogin(userId int) {
 	loginMu.Lock()
 	defer loginMu.Unlock()
+
 	redisClient.Do("SET", "login_"+strconv.Itoa(userId), time.Now().UnixNano()/int64(time.Millisecond))
 }
 
@@ -569,6 +573,7 @@ func getLoginUsers() []int {
 	var onLineUsers []int
 	loginMu.Lock()
 	defer loginMu.Unlock()
+
 	keys, _ := redis.Strings(redisClient.Do("KEYS", "login_*"))
 	for _, key := range keys {
 		loginTime, _ := redis.Int(redisClient.Do("GET", key))
@@ -587,7 +592,6 @@ func randomString(length int) string {
 	for i := range b {
 		b[i] = rs1Letters[rand.Intn(len(rs1Letters))]
 	}
-
 	return string(b)
 }
 
@@ -599,6 +603,7 @@ func register(name string, email string, password string, tx *sql.Tx) (int, erro
 		return 0, err
 	}
 	defer stmt.Close()
+
 	result, err := stmt.Exec(name, email, password, salt)
 	if err != nil {
 		return 0, err
@@ -607,15 +612,14 @@ func register(name string, email string, password string, tx *sql.Tx) (int, erro
 	if err != nil {
 		return 0, err
 	}
-
 	query = "INSERT INTO salts (user_id, salt) VALUES ( ?, ? )"
 	stmt, err = tx.Prepare(query)
 	if err != nil {
 		return 0, err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(userId, salt)
 
+	_, err = stmt.Exec(userId, salt)
 	return int(userId), err
 }
 
@@ -684,12 +688,10 @@ func PostRegist(w http.ResponseWriter, r *http.Request) {
 		render(w, r, http.StatusOK, "regist.html", struct{ Message string }{"すべて必須入力です"})
 		return
 	}
-
 	tx, err := db.Begin()
 	if err != nil {
 		return
 	}
-
 	defer func() {
 		tx.Rollback()
 	}()
@@ -704,13 +706,10 @@ func PostRegist(w http.ResponseWriter, r *http.Request) {
 			render(w, r, http.StatusOK, "regist.html", struct{ Message string }{mysqlErr.Message})
 		}
 	}
-
 	session := getSession(r)
 	session.Values["user_id"] = userId
 	session.Save(r, w)
-
 	tx.Commit()
-
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
@@ -724,14 +723,12 @@ func GetLogout(w http.ResponseWriter, r *http.Request) {
 
 func GetPhoto(w http.ResponseWriter, r *http.Request) {
 	memberID, _ := mux.Vars(r)["member_id"]
-
 	row := db.QueryRow("SELECT * FROM user_photos WHERE user_id = ?", memberID)
 	var userId int
 	var photoPath string
 	var photoPathBytes, photoBinary []byte
 	var updatedAt time.Time
 	err := row.Scan(&userId, &photoPathBytes, &photoBinary, &updatedAt)
-
 	var body []byte
 	if err == sql.ErrNoRows {
 		body, _ = base64.StdEncoding.DecodeString("iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAA3klEQVR42u3SAQ0AAAgDIN8/9K3hJmQgnXZ4KwIIIIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACCCAAAIIIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIAA3LNkJfxBbCdD2AAAAAElFTkSuQmCC")
@@ -744,7 +741,6 @@ func GetPhoto(w http.ResponseWriter, r *http.Request) {
 			body = data
 		}
 	}
-
 	w.Header().Set("Content-type", "image/png")
 	w.Header().Set("Content-Length", strconv.Itoa(len(body)))
 	w.Write(body)
@@ -752,20 +748,17 @@ func GetPhoto(w http.ResponseWriter, r *http.Request) {
 
 func GetIndex(w http.ResponseWriter, r *http.Request) {
 	user := getCurrentUser(w, r)
-
 	page, _ := strconv.Atoi(r.FormValue("page"))
 	pageSize := 20
-
 	if page == 0 {
 		page = 1
 	}
 	offset := (page - 1) * pageSize
-
 	row := db.QueryRow("SELECT COUNT(*) as cnt FROM articles")
 	var cnt int
 	checkErr(row.Scan(&cnt))
-	maxPage := int(math.Ceil(float64(cnt) / float64(pageSize)))
 
+	maxPage := int(math.Ceil(float64(cnt) / float64(pageSize)))
 	rows, err := db.Query(`SELECT * FROM articles ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?`, pageSize, offset)
 	if err != sql.ErrNoRows {
 		checkErr(err)
@@ -776,13 +769,12 @@ func GetIndex(w http.ResponseWriter, r *http.Request) {
 		var title, description string
 		var createdAt, updatedAt time.Time
 		checkErr(rows.Scan(&id, &authorId, &title, &description, &updatedAt, &createdAt))
+
 		articles = append(articles, Article{id, authorId, title, description, updatedAt, createdAt})
 	}
 	rows.Close()
-
 	headerInfo.Current = "new"
 	headerInfo.Write = true
-
 	render(w, r, http.StatusOK, "index.html", struct {
 		User            User
 		Articles        []Article
@@ -804,19 +796,17 @@ func GetIndex(w http.ResponseWriter, r *http.Request) {
 
 func GetTags(w http.ResponseWriter, r *http.Request) {
 	user := getCurrentUser(w, r)
-
 	row := db.QueryRow("SELECT COUNT(*) as cnt FROM tags")
 	var cnt int
 	checkErr(row.Scan(&cnt))
+
 	page, _ := strconv.Atoi(r.FormValue("page"))
 	pageSize := 20
-
 	if page == 0 {
 		page = 1
 	}
 	offset := (page - 1) * pageSize
 	maxPage := int(math.Ceil(float64(cnt) / float64(pageSize)))
-
 	rows, err := db.Query(`
 			SELECT
 				*
@@ -835,13 +825,12 @@ func GetTags(w http.ResponseWriter, r *http.Request) {
 		var name string
 		var createdAt time.Time
 		checkErr(rows.Scan(&tagId, &name, &createdAt))
+
 		tagNames = append(tagNames, TagName{tagId, name, createdAt})
 	}
 	rows.Close()
-
 	headerInfo.Current = "tags"
 	headerInfo.Write = true
-
 	render(w, r, http.StatusOK, "tags.html", struct {
 		User       User
 		TagNames   []TagName
@@ -862,19 +851,17 @@ func GetTags(w http.ResponseWriter, r *http.Request) {
 func GetTag(w http.ResponseWriter, r *http.Request) {
 	user := getCurrentUser(w, r)
 	tagId := mux.Vars(r)["tag_id"]
-
 	row := db.QueryRow("SELECT COUNT(*) as cnt FROM article_relate_tags WHERE tag_id = ?", tagId)
 	var cnt int
 	checkErr(row.Scan(&cnt))
+
 	page, _ := strconv.Atoi(r.FormValue("page"))
 	pageSize := 20
-
 	if page == 0 {
 		page = 1
 	}
 	offset := (page - 1) * pageSize
 	maxPage := int(math.Ceil(float64(cnt) / float64(pageSize)))
-
 	query := `SELECT
 				*
 			FROM
@@ -884,24 +871,20 @@ func GetTag(w http.ResponseWriter, r *http.Request) {
 			ORDER BY
 				article_id DESC
 			LIMIT ? OFFSET ?`
-
 	rows, err := db.Query(query, tagId, pageSize, offset)
-
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
-
 	articleRelateTags := make([]ArticleRelateTags, 0, pageSize)
 	for rows.Next() {
 		var articleId, tagId int
 		checkErr(rows.Scan(&articleId, &tagId))
+
 		articleRelateTags = append(articleRelateTags, ArticleRelateTags{articleId, tagId})
 	}
 	rows.Close()
-
 	headerInfo.Current = ""
 	headerInfo.Write = true
-
 	render(w, r, http.StatusOK, "tag.html", struct {
 		User              User
 		ArticleRelateTags []ArticleRelateTags
@@ -923,13 +906,11 @@ func GetTag(w http.ResponseWriter, r *http.Request) {
 
 func GetMembers(w http.ResponseWriter, r *http.Request) {
 	user := getCurrentUser(w, r)
-
 	row := db.QueryRow("SELECT COUNT(*) as cnt FROM users")
 	var cnt int
 	checkErr(row.Scan(&cnt))
 	page, _ := strconv.Atoi(r.FormValue("page"))
 	pageSize := 20
-
 	if page == 0 {
 		page = 1
 	}
@@ -952,13 +933,12 @@ func GetMembers(w http.ResponseWriter, r *http.Request) {
 		var id int
 		var nickName, email, passhash string
 		checkErr(rows.Scan(&id, &nickName, &email, &passhash))
+
 		members = append(members, User{id, nickName, email, passhash})
 	}
 	rows.Close()
-
 	headerInfo.Current = "members"
 	headerInfo.Write = true
-
 	render(w, r, http.StatusOK, "members.html", struct {
 		User       User
 		Members    []User
@@ -979,13 +959,12 @@ func GetMembers(w http.ResponseWriter, r *http.Request) {
 func GetMember(w http.ResponseWriter, r *http.Request) {
 	user := getCurrentUser(w, r)
 	memberId, _ := strconv.Atoi(mux.Vars(r)["member_id"])
-
 	row := db.QueryRow("SELECT COUNT(*) as cnt FROM articles WHERE author_id = ?", memberId)
 	var cnt int
 	checkErr(row.Scan(&cnt))
+
 	page, _ := strconv.Atoi(r.FormValue("page"))
 	pageSize := 20
-
 	if page == 0 {
 		page = 1
 	}
@@ -1012,14 +991,13 @@ func GetMember(w http.ResponseWriter, r *http.Request) {
 		var title, description string
 		var updatedAt, createdAt time.Time
 		checkErr(rows.Scan(&id, &authorId, &title, &description, &updatedAt, &createdAt))
+
 		articles = append(articles, Article{id, authorId, title, description, updatedAt, createdAt})
 	}
 	rows.Close()
 	author := getUser(memberId)
-
 	headerInfo.Current = "members"
 	headerInfo.Write = true
-
 	render(w, r, http.StatusOK, "member.html", struct {
 		User       User
 		Author     User
@@ -1042,14 +1020,12 @@ func GetMember(w http.ResponseWriter, r *http.Request) {
 func GetArticle(w http.ResponseWriter, r *http.Request) {
 	user := getCurrentUser(w, r)
 	articleId, _ := strconv.Atoi(mux.Vars(r)["article_id"])
-
 	row := db.QueryRow("SELECT COUNT(id) as cnt FROM iines WHERE article_id =? AND user_id = ?", articleId, user.ID)
 	var cnt int
 	checkErr(row.Scan(&cnt))
 
 	headerInfo.Current = ""
 	headerInfo.Write = true
-
 	render(w, r, http.StatusOK, "article.html", struct {
 		User       User
 		ArticleId  int
@@ -1069,7 +1045,6 @@ func PostIine(w http.ResponseWriter, r *http.Request) {
 	user := getCurrentUser(w, r)
 	articleId, _ := strconv.Atoi(mux.Vars(r)["article_id"])
 	sign := r.FormValue("name")
-
 	var query string
 	if sign == "plus" {
 		query = "INSERT INTO iines (article_id, user_id) VALUES( ?, ? )"
@@ -1088,10 +1063,8 @@ func PostIine(w http.ResponseWriter, r *http.Request) {
 
 func GetWrite(w http.ResponseWriter, r *http.Request) {
 	user := getCurrentUser(w, r)
-
 	headerInfo.Current = ""
 	headerInfo.Write = false
-
 	render(w, r, http.StatusOK, "write.html", struct {
 		User        User
 		Message     string
@@ -1114,7 +1087,6 @@ func PostWrite(w http.ResponseWriter, r *http.Request) {
 	tags := r.FormValue("tags")
 	articleBody := r.FormValue("articleBody")
 	user := getCurrentUser(w, r)
-
 	tx, err := db.Begin()
 	if err != nil {
 		return
@@ -1127,7 +1099,6 @@ func PostWrite(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		headerInfo.Current = ""
 		headerInfo.Write = false
-
 		render(w, r, http.StatusOK, "write.html", struct {
 			User        User
 			Message     string
@@ -1143,7 +1114,6 @@ func PostWrite(w http.ResponseWriter, r *http.Request) {
 			articleBody,
 			headerInfo,
 		})
-
 		return
 	}
 	tx.Commit()
@@ -1152,10 +1122,8 @@ func PostWrite(w http.ResponseWriter, r *http.Request) {
 
 func GetUpdate(w http.ResponseWriter, r *http.Request) {
 	user := getCurrentUser(w, r)
-
 	articleId, _ := strconv.Atoi(mux.Vars(r)["article_id"])
 	article := getArticle(articleId)
-
 	tagsArray := getArticleTagNames(articleId)
 	tags := ""
 	for _, tagName := range tagsArray {
@@ -1165,7 +1133,6 @@ func GetUpdate(w http.ResponseWriter, r *http.Request) {
 			tags = tags + "," + tagName.Name
 		}
 	}
-
 	render(w, r, http.StatusOK, "update.html", struct {
 		User       User
 		Message    string
@@ -1185,19 +1152,15 @@ func GetUpdate(w http.ResponseWriter, r *http.Request) {
 
 func PostUpdate(w http.ResponseWriter, r *http.Request) {
 	user := getCurrentUser(w, r)
-
 	title := r.FormValue("title")
 	tags := r.FormValue("tags")
 	articleId, _ := strconv.Atoi(r.FormValue("article_id"))
 	articleBody := r.FormValue("articleBody")
-
 	article := getArticle(articleId)
-
 	tx, err := db.Begin()
 	if err != nil {
 		return
 	}
-
 	defer func() {
 		tx.Rollback()
 	}()
@@ -1205,7 +1168,6 @@ func PostUpdate(w http.ResponseWriter, r *http.Request) {
 	if user.ID != article.AuthorId {
 		return
 	}
-
 	err = UpdArticle(user.ID, articleId, title, tags, articleBody, tx)
 	if err != nil {
 		render(w, r, http.StatusOK, "update.html", struct {
@@ -1223,22 +1185,18 @@ func PostUpdate(w http.ResponseWriter, r *http.Request) {
 			tags,
 			headerInfo,
 		})
-
 		return
 	}
-
 	tx.Commit()
 	http.Redirect(w, r, "/article/"+strconv.Itoa(articleId), http.StatusFound)
 }
 
 func GetProfileUpdate(w http.ResponseWriter, r *http.Request) {
 	user := getCurrentUser(w, r)
-
 	userIdByGet, _ := strconv.Atoi(mux.Vars(r)["user_id"])
 	if user.ID != userIdByGet {
 		return
 	}
-
 	render(w, r, http.StatusOK, "profileupdate.html", struct {
 		User       User
 		Message    string
@@ -1252,22 +1210,18 @@ func GetProfileUpdate(w http.ResponseWriter, r *http.Request) {
 
 func PostProfileUpdate(w http.ResponseWriter, r *http.Request) {
 	user := getCurrentUser(w, r)
-
 	nickName := r.FormValue("nick_name")
 	email := r.FormValue("email")
 	currentPassword := r.FormValue("current_password")
 	newPassword := r.FormValue("new_password")
-
 	iconFile, _, err := r.FormFile("icon_file")
 	if err != nil {
 		return
 	}
-
 	tx, err := db.Begin()
 	if err != nil {
 		return
 	}
-
 	defer func() {
 		tx.Rollback()
 	}()
@@ -1277,7 +1231,6 @@ func PostProfileUpdate(w http.ResponseWriter, r *http.Request) {
 	if len(buffer.Bytes()) > 0 {
 		insAndUpdUserPhoto(user.ID, nil, buffer.Bytes(), tx)
 	}
-
 	if newPassword != "" {
 		errorMessage := updatePassword(user.ID, currentPassword, newPassword, tx)
 		if errorMessage != "" {
@@ -1292,17 +1245,13 @@ func PostProfileUpdate(w http.ResponseWriter, r *http.Request) {
 			})
 		}
 	}
-
 	if nickName != "" {
 		updateNickName(user.ID, nickName, tx)
 	}
-
 	if email != "" {
 		updateEmail(user.ID, email, tx)
 	}
-
 	tx.Commit()
-
 	http.Redirect(w, r, "/member/"+strconv.Itoa(user.ID), http.StatusFound)
 }
 
@@ -1346,7 +1295,6 @@ func main() {
 	if ssecret == "" {
 		ssecret = "hidakkathon"
 	}
-
 	db, err = sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?loc=Local&parseTime=true", user, password, host, port, dbname))
 	if err != nil {
 		log.Fatalf("Failed to connect to DB: %s.", err.Error())
@@ -1354,7 +1302,6 @@ func main() {
 	defer db.Close()
 
 	store = sessions.NewCookieStore([]byte(ssecret))
-
 	rhost := os.Getenv("HIDAKKATHON_CACHE_HOST")
 	if rhost == "" {
 		rhost = "localhost"
@@ -1367,10 +1314,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect to Redis: %s.", err.Error())
 	}
-
 	r := mux.NewRouter()
 	r.Use(recoverMiddleware)
-
 	l := r.Path("/login").Subrouter()
 	l.Methods("GET").HandlerFunc(GetLogin)
 	l.Methods("POST").HandlerFunc(PostLogin)
