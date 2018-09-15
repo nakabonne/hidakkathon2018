@@ -1,5 +1,4 @@
 alter table iines add index (article_id);
-alter table iines add index (user_id, updated_at);
 
 alter table articles add index (author_id);
 
