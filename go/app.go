@@ -1151,10 +1151,10 @@ func PostWrite(w http.ResponseWriter, r *http.Request) {
 		tx.Rollback()
 	}()
 
-	// Debug
-	fmt.Printf("Write Article %d, %v, %v \n", user.ID, title, tags)
-
 	articleId, err := InsArticle(user.ID, title, tags, articleBody, tx)
+
+	// Debug
+	fmt.Printf("Write Article articleID : %v, userID : %d, Title : %v, Tags : %v \n", articleId, user.ID, title, tags)
 
 	if err != nil {
 		headerInfo.Current = ""
