@@ -11,3 +11,15 @@ restart:
 
 rotate:
 	sh scripts/rotate_alplog.sh
+
+set-slow-log:
+	sudo mysql -uisucon -pisucon -e "set global slow_query_log = 1"
+	sudo mysql -uisucon -pisucon -e "set global long_query_time = 0"
+	sudo mysql -uisucon -pisucon -e "set global log_queries_not_using_indexes = 1"
+
+mysqldumpslow:
+	sudo mysqldumpslow -s t /var/lib/mysql/hidakkathon2018-student-php-slow.log > ~/tmp/slow.log
+	sudo cp /dev/null /var/lib/mysql/hidakkathon2018-student-php-slow.log
+
+restart-mysql:
+	sudo /etc/init.d/mysql restart
