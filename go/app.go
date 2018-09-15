@@ -148,12 +148,19 @@ func getUser(userID int) *User {
 }
 
 func getIineCount(articleId int) int {
+	if iineCnt[articleId] == 0 {
+		row := db.QueryRow(`SELECT COUNT(id) as cnt FROM iines WHERE article_id = ?`, articleId)
+		err := row.Scan(iineCnt[articleId])
+		checkErr(err)
+	}
+
 	// row := db.QueryRow(`SELECT COUNT(id) as cnt FROM iines WHERE article_id = ?`, articleId)
 	// cnt := new(int)
 	// err := row.Scan(cnt)
 	// checkErr(err)
 
 	// return *cnt
+	log.Printf("articleID:%d, cnt:%d", articleId, iineCnt[articleId])
 	return iineCnt[articleId]
 }
 
@@ -1087,8 +1094,7 @@ func PostIine(w http.ResponseWriter, r *http.Request) {
 
 	// row := db.QueryRow("SELECT COUNT(id) as cnt FROM iines WHERE article_id = ?", articleId)
 	// checkErr(row.Scan(&cnt))
-	log.Println(iineCnt[articleId])
-
+	log.Printf("articleID:%d, cnt:%d", articleId, iineCnt[articleId])
 	w.Write([]byte(strconv.Itoa(iineCnt[articleId])))
 }
 
