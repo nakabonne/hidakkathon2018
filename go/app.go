@@ -21,6 +21,8 @@ import (
 	"sync"
 	"time"
 
+	_ "net/http/pprof"
+
 	"github.com/go-sql-driver/mysql"
 	"github.com/gomodule/redigo/redis"
 	"github.com/gorilla/context"
@@ -262,11 +264,11 @@ func getPopularArticles() []PopularArticle {
 		checkErr(err)
 	}
 	popularArticles := make([]PopularArticle, 0, 5)
-  fmt.Println("start!!!!!!!!!!!!!!!!!!")
+	fmt.Println("start!!!!!!!!!!!!!!!!!!")
 	for rows.Next() {
 		var articleId, iineCount int
 		checkErr(rows.Scan(&articleId, &iineCount))
-    fmt.Println("article is", articleId)
+		fmt.Println("article is", articleId)
 		popularArticles = append(popularArticles, PopularArticle{articleId, iineCount})
 	}
 	rows.Close()
@@ -1356,6 +1358,10 @@ func main() {
 
 	r := mux.NewRouter()
 	r.Use(recoverMiddleware)
+
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
 
 	l := r.Path("/login").Subrouter()
 	l.Methods("GET").HandlerFunc(GetLogin)
