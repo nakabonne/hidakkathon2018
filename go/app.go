@@ -91,6 +91,8 @@ var (
 	ErrContentNotFound = errors.New("content not found")
 )
 
+var iineCnt map[int]int
+
 func authenticate(w http.ResponseWriter, r *http.Request, email, passwd string) {
 	query := `SELECT u.id AS id, nick_name AS nick_name, u.email AS email
 FROM users u
@@ -146,11 +148,13 @@ func getUser(userID int) *User {
 }
 
 func getIineCount(articleId int) int {
-	row := db.QueryRow(`SELECT COUNT(id) as cnt FROM iines WHERE article_id = ?`, articleId)
-	cnt := new(int)
-	err := row.Scan(cnt)
-	checkErr(err)
-	return *cnt
+	// row := db.QueryRow(`SELECT COUNT(id) as cnt FROM iines WHERE article_id = ?`, articleId)
+	// cnt := new(int)
+	// err := row.Scan(cnt)
+	// checkErr(err)
+
+	// return *cnt
+	return iineCnt[articleId]
 }
 
 func getTagCount(tagId int) int {
@@ -262,11 +266,11 @@ func getPopularArticles() []PopularArticle {
 		checkErr(err)
 	}
 	popularArticles := make([]PopularArticle, 0, 5)
-  fmt.Println("start!!!!!!!!!!!!!!!!!!")
+	fmt.Println("start!!!!!!!!!!!!!!!!!!")
 	for rows.Next() {
 		var articleId, iineCount int
 		checkErr(rows.Scan(&articleId, &iineCount))
-    fmt.Println("article is", articleId)
+		fmt.Println("article is", articleId)
 		popularArticles = append(popularArticles, PopularArticle{articleId, iineCount})
 	}
 	rows.Close()
@@ -1050,24 +1054,42 @@ func GetArticle(w http.ResponseWriter, r *http.Request) {
 }
 
 func PostIine(w http.ResponseWriter, r *http.Request) {
-	user := getCurrentUser(w, r)
+	//user必要なのかよくわからない
+	// user := getCurrentUser(w, r)
 	articleId, _ := strconv.Atoi(mux.Vars(r)["article_id"])
 	sign := r.FormValue("name")
 
-	var query string
-	if sign == "plus" {
-		query = "INSERT INTO iines (article_id, user_id) VALUES( ?, ? )"
-	} else {
-		query = "DELETE FROM iines WHERE article_id = ? AND user_id = ?"
+	// var query string
+	// if sign == "plus" {
+	// 	query = "INSERT INTO iines (article_id, user_id) VALUES( ?, ? )"
+	// } else {
+	// 	query = "DELETE FROM iines WHERE article_id = ? AND user_id = ?"
+	// }
+	// _, err := db.Exec(query, articleId, user.ID)
+	// checkErr(err)
+
+	// var cnt int
+	if iineCnt[articleId] == 0 {
+		row := db.QueryRow("SELECT COUNT(id) as cnt FROM iines WHERE article_id = ?", articleId)
+		checkErr(row.Scan(iineCnt[articleId]))
 	}
-	_, err := db.Exec(query, articleId, user.ID)
-	checkErr(err)
 
-	var cnt int
-	row := db.QueryRow("SELECT COUNT(id) as cnt FROM iines WHERE article_id = ?", articleId)
-	checkErr(row.Scan(&cnt))
+	// var query string
+	if sign == "plus" {
+		iineCnt[articleId] = iineCnt[articleId] + 1
+		// query = "INSERT INTO iines (article_id, user_id) VALUES( ?, ? )"
+	} else {
+		iineCnt[articleId] = iineCnt[articleId] - 1
+		// query = "DELETE FROM iines WHERE article_id = ? AND user_id = ?"
+	}
+	// _, err := db.Exec(query, articleId, user.ID)
+	// checkErr(err)
 
-	w.Write([]byte(strconv.Itoa(cnt)))
+	// row := db.QueryRow("SELECT COUNT(id) as cnt FROM iines WHERE article_id = ?", articleId)
+	// checkErr(row.Scan(&cnt))
+	log.Println(iineCnt[articleId])
+
+	w.Write([]byte(strconv.Itoa(iineCnt[articleId])))
 }
 
 func GetWrite(w http.ResponseWriter, r *http.Request) {
