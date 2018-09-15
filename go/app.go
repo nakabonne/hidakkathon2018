@@ -1061,41 +1061,24 @@ func GetArticle(w http.ResponseWriter, r *http.Request) {
 }
 
 func PostIine(w http.ResponseWriter, r *http.Request) {
-	//user必要なのかよくわからない
-	// user := getCurrentUser(w, r)
+	user := getCurrentUser(w, r)
 	articleId, _ := strconv.Atoi(mux.Vars(r)["article_id"])
 	sign := r.FormValue("name")
 
-	// var query string
-	// if sign == "plus" {
-	// 	query = "INSERT INTO iines (article_id, user_id) VALUES( ?, ? )"
-	// } else {
-	// 	query = "DELETE FROM iines WHERE article_id = ? AND user_id = ?"
-	// }
-	// _, err := db.Exec(query, articleId, user.ID)
-	// checkErr(err)
-
-	// var cnt int
-	if iineCnt[articleId] == 0 {
-		row := db.QueryRow("SELECT COUNT(id) as cnt FROM iines WHERE article_id = ?", articleId)
-		checkErr(row.Scan(iineCnt[articleId]))
-	}
-
-	// var query string
+	var query string
 	if sign == "plus" {
-		iineCnt[articleId] = iineCnt[articleId] + 1
-		// query = "INSERT INTO iines (article_id, user_id) VALUES( ?, ? )"
+		query = "INSERT INTO iines (article_id, user_id) VALUES( ?, ? )"
 	} else {
-		iineCnt[articleId] = iineCnt[articleId] - 1
-		// query = "DELETE FROM iines WHERE article_id = ? AND user_id = ?"
+		query = "DELETE FROM iines WHERE article_id = ? AND user_id = ?"
 	}
-	// _, err := db.Exec(query, articleId, user.ID)
-	// checkErr(err)
+	_, err := db.Exec(query, articleId, user.ID)
+	checkErr(err)
 
-	// row := db.QueryRow("SELECT COUNT(id) as cnt FROM iines WHERE article_id = ?", articleId)
-	// checkErr(row.Scan(&cnt))
-	log.Printf("articleID:%d, cnt:%d", articleId, iineCnt[articleId])
-	w.Write([]byte(strconv.Itoa(iineCnt[articleId])))
+	var cnt int
+	row := db.QueryRow("SELECT COUNT(id) as cnt FROM iines WHERE article_id = ?", articleId)
+	checkErr(row.Scan(&cnt))
+
+	w.Write([]byte(strconv.Itoa(cnt)))
 }
 
 func GetWrite(w http.ResponseWriter, r *http.Request) {
