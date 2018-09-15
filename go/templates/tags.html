@@ -1,0 +1,45 @@
+{{ template "header.html" .}}
+
+<div class="row">
+    <div class="col-md-12 panel panel-primary">
+			<div class=""><h4 id="tagCount" ><i class="glyphicon glyphicon-tags"></i> {{ .MaxCount }}件のタグ</h4>
+            <div class="list-group">
+                {{ range $i, $tagNames := .TagNames }}
+                    <div class="list-group-item">
+											<a id="tagIdLinke{{ add $i 1 }}" href="/tag/{{ .ID }}"><i class="glyphicon glyphicon-tag"></i> {{ .Name }}</a>
+											<button type="button" class="pull-right btn btn-info btn-xs"><i class="glyphicon glyphicon-file"></i> <span id="tagCount{{ add $i 1 }}" class="badge">{{ getTagCount .ID }}</span></button>
+                    </div>
+								{{ end }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-md-4"></div>
+<div class="col-md-4">
+    <nav>
+        <ul class="pagination">
+					  {{ if lt 1 .Page  }}
+						<li><a id="pageBackLink" href="/tags?page={{ add .Page -1 }}"><span>«</span></a></li>
+						{{ end }}
+						{{ $page := .Page }}
+						{{ range $i, $j := for .MaxPage }}
+						{{ $p := add $i 1 }}
+						    {{ if eq $page $p}}
+								<li class="active"><a id="currentPageLink" href="/tags?page={{ $p }}">{{ $p }}</a></li>
+								{{ end }}
+						{{ end }}
+					  {{ if lt .Page .MaxPage  }}
+						<li><a id="pageNextLink" href="/tags?page={{ add .Page 1}}"><span>»</span></a></li>
+						{{ end }}
+        </ul>
+    </nav>
+</div>
+<div class="col-md-4"></div>
+
+
+  </div>
+</div>
+
+</body>
+</html>

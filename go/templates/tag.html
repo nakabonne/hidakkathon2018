@@ -1,0 +1,64 @@
+{{ template "header.html" .}}
+
+{{ $tagId := .TagId }}
+
+<div class="row">
+    <div class="col-md-12 panel panel-primary">
+        <ul class="list-group">
+						{{ range $i, $articleRelateTags := .ArticleRelateTags }}
+						{{ $article := getArticle $articleRelateTags.ArticleId}}
+						{{ $author := getUser $article.AuthorId }}
+                <li class="list-group-item">
+                    <article class="media">
+                        <div class="element_icon media-left" ><img id="artcileAuhtorLinke{{ add $i 1 }}" class="img-rounded" width="40" height="40" src="/photo/{{ $article.AuthorId }}"></div>
+                        <div class="element_body media-body" >
+													<div id="articleAuthorNickName{{ add $i 1 }}" class="element_user media-left">{{ $author.NickName }}</div>
+														<div class="element_datetime media-right">{{ deltaTime $article.UpdatedAt }}</div>
+														<h2 class="element_title media-heading"><a id="artcileTitleLink{{ add $i 1 }}" href="/article/{{ $article.ID}}">{{ $article.Title }}</a></h2>
+                            <button type="button" class="btn btn-primary pull-right btn-xs "><i class="glyphicon glyphicon-thumbs-up"></i> <span id="articleIineCount{{ add $i 1 }}" class="badge">{{ getIineCount $article.ID }}</span></button>
+                            <div class="element_tag media" >
+                                <div class="element_tag media-left" >
+																		{{ $tagNames := getArticleTagNames $article.ID }}
+																		{{ range $j, $tagName := $tagNames }}
+																		<a id="article{{ add $i 1 }}_tagId{{ add $j 1 }}" href="/tag/{{ $tagName.ID}}" class="element_tag_base" >
+                                            <span id="article{{ add $i 1 }}_tagName{{ add $j 1 }}" class="element_tag_name label label-default" >{{ $tagName.Name }}</span>
+                                        </a>
+																		{{ end }}
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </li>
+						{{ end }}
+        </ul>
+    </div>
+</div>
+
+<div class="col-md-4"></div>
+<div class="col-md-4">
+    <nav>
+        <ul class="pagination">
+					  {{ if lt 1 .Page  }}
+						<li><a id="pageBackLink" href="/tag/{{ $tagId }}?page={{ add .Page -1 }}"><span>«</span></a></li>
+						{{ end }}
+						{{ $page := .Page }}
+						{{ range $i, $j := for .MaxPage }}
+						{{ $p := add $i 1 }}
+						    {{ if eq $page $p}}
+								<li class="active"><a id="currentPageLink" href="/tag/{{ $tagId }}?page={{ $p }}">{{ $p }}</a></li>
+								{{ end }}
+						{{ end }}
+					  {{ if lt .Page .MaxPage  }}
+						<li><a id="pageNextLink" href="/tag/{{ $tagId }}?page={{ add .Page 1}}"><span>»</span></a></li>
+						{{ end }}
+        </ul>
+    </nav>
+</div>
+<div class="col-md-4"></div>
+
+
+
+
+
+</body>
+</html>

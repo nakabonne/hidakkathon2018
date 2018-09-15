@@ -1,0 +1,91 @@
+{{ template "header.html" .}}
+
+<div class="row">
+    <div class="col-md-8 panel panel-primary">
+        <ul class="list-group">
+
+        {{ range $i, $article := .Articles }}
+					{{ $author := getUser $article.AuthorId }}
+                <li class="list-group-item">
+                    <article class="media">
+											<div class="element_icon media-left" ><a id="articleAuthorLink{{ add $i 1 }}" href="/member/{{ .AuthorId }}"><img id="articleAuthorImage{{ add $i 1 }}" class="img-rounded" width="40" height="40" src="/photo/{{ .AuthorId }}"></a></div>
+
+                        <div class="element_body media-body" >
+													<div id="articleAuthorNickName{{ add $i 1}}" class="element_user media-left">{{ $author.NickName }}</div>
+													<div id="articleUpdateString{{ add $i 1}}" class="element_datetime media-right">{{ deltaTime .UpdatedAt}}</div>
+													<h2 class="element_title media-heading"><a id="articleLink{{ add $i 1 }}" href="/article/{{ .ID }}">{{ .Title }}</a></h2>
+													<button type="button" class="btn btn-primary pull-right btn-xs "><i class="glyphicon glyphicon-thumbs-up"></i> <span class="badge" id="articleIineCount{{ add $i 1}}" >{{ getIineCount .ID }}</span></button>
+                            <div class="element_tag media" >
+                                <div class="element_tag media-left" >
+																		{{ $tagNames := getArticleTagNames .ID }}
+																		{{ range $j, $tagName := $tagNames }}
+
+                                        <a id="article{{ add $i 1}}_Id{{ add $j 1}}" href="/tag/{{ $tagName.ID }}" class="element_tag_base" >
+																					<span id="article{{ add $i 1}}_TagName{{ add $j 1}}" class="element_tag_name label label-default" >{{ $tagName.Name }}</span>
+                                        </a>
+																		{{ end }}
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </li>
+						{{ end }}
+        </ul>
+    </div>
+    <div class="col-md-4">
+        <div class=""><h4><i class="glyphicon glyphicon-flag"></i>人気の記事</h4>
+            <ul class="list-group">
+								{{ range $i, $popularArticle := .PopularArticles }}
+										{{ $article := getArticle $popularArticle.ArticleId }}
+										{{ $iineUsers := getArticleIineUsers $popularArticle.ArticleId }}
+                    <li class="list-group-item">
+                        <div class="media">
+													<div class="element_icon media-left" ><a href="/"><img class="img-rounded" width="20" height="20" src="/photo/{{ $article.AuthorId }}"></a></div>
+                            <div class="media-body">
+															<h4 class="media-heading"><a id="popularArticleLink{{ add $i 1 }}" href="/article/{{ $article.ID }}">{{ $article.Title}}</a></h4>
+                                <div class="media">
+																	<span id="popularArticle{{ add $i 1 }}_iineCount" class="badge">{{ .IineCnt }}</span>
+																		{{ range $j, $iineUser := $iineUsers }}
+																		<a id="popularArticle{{ add $i 1 }}_iineUserId {{ add $j 1 }}" href="/member/{{ $iineUser }}"><img class="img-rounded" width="20" height="20" src="/photo/{{ $iineUser }}"></a>
+																		{{ end }}
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+								{{ end }}
+            </ul>
+        </div>
+        <div class=""><h4><i class="glyphicon glyphicon-user"></i> メンバー</h4>
+				    {{ range $i, $onlineUser := .OnlineUsers }}
+						<a id="onLineUserLink{{ add $i 1 }}" href="/member/{{ $onlineUser }}"><img class="img-rounded" width="30" height="30" style="margin: 1px;" src="/photo/{{ $onlineUser }}"></a>
+						{{ end }}
+            <div class=""><a href="/members">»メンバー一覧</a></div>
+        </div>
+    </div>
+</div>
+
+<div class="col-md-4"></div>
+<div class="col-md-4">
+    <nav>
+        <ul class="pagination">
+					  {{ if lt 1 .Page  }}
+						<li><a id="pageBackLink" href="/?page={{ add .Page -1 }}"><span>«</span></a></li>
+						{{ end }}
+						{{ $page := .Page }}
+						{{ range $i, $j := for .MaxPage }}
+						{{ $p := add $i 1 }}
+						    {{ if eq $page $p}}
+								<li class="active"><a id="currentPageLink" href="/?page={{ $p }}">{{ $p }}</a></li>
+								{{ end }}
+						{{ end }}
+					  {{ if lt .Page .MaxPage  }}
+						<li><a id="pageNextLink" href="/?page={{ add .Page 1}}"><span>»</span></a></li>
+						{{ end }}
+        </ul>
+    </nav>
+
+  </div>
+</div>
+
+</body>
+</html>

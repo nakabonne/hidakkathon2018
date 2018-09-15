@@ -1,0 +1,18 @@
+MySQLディレクトリのファイルについて
+
+schema4.sql
+
+ヒダッカソン用にテーブルの
+DDL文
+
+どんな定義、どんなデータがあるかをざっくり参照するため用のファイル
+
+
+hidakkathon4.sql.gz
+
+データベースのダンプファイル
+
+CREATE DATABASE `hidakkathon`;
+
+を実行して DBを作った後
+Dumpデータを取り込むことでDBの初期化が可能

@@ -1,0 +1,86 @@
+{{ template "header.html" .}}
+
+<div class="row">
+    <div class="col-md-12 panel panel-primary">
+        <div class="panel-body">
+					<div class="alert alert-danger text-danger" id="update-message">{{ .Message }}</div>
+						<form id="profileUpdateForm" action="/profileupdate/{{ .User.ID }}" method="POST" enctype="multipart/form-data">
+                <div class="media">
+									<div id="iconDiv" class="media-left"><img id="userPhotoIcon" class="img-rounded " width="50" height="50" src="/photo/{{ .User.ID }}"></div>
+                    <div class="media-body">
+                        <div class="form-group">
+                            <input type="file" name="icon_file" accept="image/png" class="form-control-file" id="userPhotoIconUpl">
+                        </div>
+                    </div>
+                </div>
+                <div class="media"></div>
+                <div class="form-group row">
+                    <label for="nickName" class="col-sm-2 col-form-label">ユーザ名</label>
+                    <div class="col-sm-4">
+											<input type="text" class="form-control" name="nick_name" id="nickName" placeholder="ユーザ名" value="{{ .User.NickName }}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="email" class="col-sm-2 col-form-label">email</label>
+                    <div class="col-sm-6">
+											<input type="email" class="form-control" id="email"  name="email" placeholder="Enter email" value="{{ .User.Email }}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="currentPassword" class="col-sm-2 col-form-label">現在のパスワード</label>
+                    <div class="col-sm-6">
+                        <input type="password" class="form-control" id="currentPassword" name="current_password" aria-describedby="passwordHelp" placeholder="Password">
+                        <small id="passwordHelp" class="form-text text-muted">パスワードを変更したいときのみ入力してください</small>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="newPassword" class="col-sm-2 col-form-label">新しいパスワード</label>
+                    <div class="col-sm-6">
+                        <input type="password" class="form-control" id="newPassword" name="new_password" aria-describedby="newPasswordHelp" placeholder="Password">
+                        <small id="newPasswordHelp" class="form-text text-muted">パスワードを変更したいときのみ入力してください</small>
+                    </div>
+                </div>
+                <input type="submit" class="btn btn-primary" value="更新">
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="/js/jquery.min.js"></script>
+
+<script>
+  $(function(){
+    $('form').on('change', 'input[type="file"]', function(e) {
+      var file = e.target.files[0],
+        reader = new FileReader(),
+        $preview = $("#iconDiv");
+      t = this;
+
+      if(file.type.indexOf("image") < 0){
+        return false;
+      }
+
+      // ファイル読み込みが完了した際のイベント登録
+      reader.onload = (function(file) {
+        return function(e) {
+          //既存のプレビューを削除
+          $preview.empty();
+          $preview.append($('<img>').attr({
+            src: e.target.result,
+            width: "50px",
+            height: "50px",
+            class: "img-rounded",
+            title: file.name
+          }));
+
+        };
+      })(file);
+
+      reader.readAsDataURL(file);
+    });
+  });
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,25 @@
+{{ template "header.html" .}}
+
+<div class=" panel panel-default ">
+    <form id="writeForm" action="/write" method="POST">
+        <div class="panel-body">
+					<div class="alert alert-danger text-danger" id="write-message">{{ .Message }}</div>
+            <div class="form-group">
+							<input class="form-control form-control-lg" type="text" placeholder="タイトル" name="title" value="{{ .Title }}">
+            </div>
+            <div class="form-group">
+							<input type="text" value="{{ .Tags }}" placeholder="タグをカンマ区切り" class="form-control" data-role="tagsinput" name="tags" />
+            </div>
+            <div class="form-group">
+							<textarea class="form-control" id="articleTextArea" rows="33" placeholder="本文を入力" name="articleBody">{{ .ArticleBody }}</textarea>
+            </div>
+            <input type="submit" class="btn btn-primary pull-right" value="Jiriqiに投稿" >
+        </div>
+    </form>
+</div>
+
+<script src="/js/jquery.min.js"></script>
+<script src="/js/bootstrap-tagsinput.min.js"></script>
+
+</body>
+</html>

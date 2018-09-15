@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html" charset="utf-8">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <title id="jiriqiTitle" >Jiriqi:Team</title>
+</head>
+
+<body class="container">
+<h1 class="jumbotron"><a id="topLink" href="/">Jiriqi:Team</a></h1>
+
+<div class="page-header">
+<h1>ログイン</h1>
+</div>
+
+<div class="alert alert-danger text-danger" id="logout-message">{{.Message}}</div>
+
+<div id="login-form">
+    <form method="POST" action="/login">
+        <div class="col-md-4 input-group">
+            <span class="input-group-addon">E-mail</span>
+            <input class="form-control" type="text" name="email" placeholder="メールアドレス" />
+        </div>
+        <div class="col-md-4 input-group">
+            <span class="input-group-addon">パスワード</span>
+            <input class="form-control" type="password" name="password" placeholder="パスワード" />
+        </div>
+        <div class="col-md-1 input-group">
+            <input class="btn btn-default" type="submit" name="Login" value="ログイン" />
+        </div>
+    </form>
+</div>
+もしJiriqiのアカウントを持っていない場合は<a id="registLink" href="/regist">新規登録</a>から。
+
+</body>
+</html>

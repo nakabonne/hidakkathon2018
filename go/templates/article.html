@@ -1,0 +1,90 @@
+{{ template "header.html" .}}
+
+{{ $author := getUser .Article.AuthorId }}
+<div class="row">
+    <div class="col-md-9 panel panel-primary">
+        <div class="panel-body">
+            <div class="media">
+							<div class=" media-left" ><a id="articleAuthorIdLink" href="/member/{{ .Article.AuthorId }}"><img class="img-rounded" width="40" height="40" src="/photo/{{ .Article.AuthorId }}"></a></div>
+                <div class="element_body media-body" >
+									<div id="articleAuthorNickName" class="element_user media-left">{{ $author.NickName}}</div>
+									<div id="articleUpdateString" class="element_datetime media-right">{{ deltaTime .Article.UpdatedAt }}</div>
+									<h2 class="element_title media-heading"><a href="/article/{{ .ArticleId}}">{{ .Article.Title }}</a></h2>
+                </div>
+                <div class="media">
+										<pre id="articleDescription" >{{ .Article.Description }}</pre>
+                </div>
+            </div>
+            <div class="form-group">
+							  {{ if eq .User.ID .Article.AuthorId }}
+								<form id="updateArticleForm" action="/update/{{ .ArticleId }}" method="GET">
+                        <input type="submit" class="btn btn-primary pull-right" value="編集する" >
+                    </form>
+								{{ else }}
+                    <form id="iineArticleForm" action="/iine/{{ .ArticleId }}" method="POST">
+											  {{ if eq .DoneIine 1 }}
+                            <button id="iineButton" type="button" class="btn btn-primary pull-right active" data-toggle="button" aria-pressed="true" autocomplete="off">
+															<i class="glyphicon glyphicon-thumbs-up"><span id="iineCnt" class="badge">{{ getIineCount .ArticleId }}</span></i>
+                            </button>
+											  {{ else }}
+                            <button id="iineButton" type="button" class="btn btn-primary pull-right " data-toggle="button" aria-pressed="false" autocomplete="off">
+                                <i class="glyphicon glyphicon-thumbs-up"><span id="iineCnt" class="badge">{{ getIineCount .ArticleId }}</span></i>
+                            </button>
+												{{ end }}
+
+                        <script src="/js/jquery.min.js"></script>
+                        <script>
+                          $(function(){
+                            $('#iineButton').click(function() {
+
+                              var sign ="";
+                              if($('#iineButton').attr('aria-pressed') == "false") {
+                                $("#iineButton").attr({
+                                  'class': "btn btn-primary pull-right active",
+                                  'aria-pressed' : "true",
+                                });
+                                sign = "plus";
+                              } else {
+                                $("#iineButton").attr({
+                                  'class': "btn btn-primary pull-right ",
+                                  'aria-pressed' : "false",
+                                });
+                                sign ="minus";
+                              }
+                              $.ajax({
+                                type: "POST",
+                                url: "/iine/{{ .ArticleId }}",
+                                data : {name : sign },
+                                success: function(data){
+                                  if(data.length > 0){
+                                    $('#iineCnt').text(data);
+                                  }
+                                }
+                              });
+                            });
+                          });
+                        </script>
+                    </form>
+								{{ end }}
+							  {{ $iineUsers := getArticleIineUsers .ArticleId }}
+								{{ range $i, $iineUser := $iineUsers }}
+								<a id="iineUserId {{ add $i 1 }}" href="/member/{{ $iineUser }}"><img class="img-rounded" width="20" height="20" src="/photo/{{ $iineUser }}"></a>
+								{{ end }}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class=""><h4><i class="glyphicon glyphicon-tags"></i> タグ</h4></div>
+				{{ $tagNames := getArticleTagNames .ArticleId }}
+				{{ range $j, $tagName := $tagNames }}
+            <a href="/tag/{{ $tagName.ID}}" class="element_tag_base" >
+                <span class="element_tag_name label label-default" >{{ $tagName.Name }}</span>
+            </a>
+				{{ end }}
+    </div>
+</div>
+
+
+
+</body>
+</html>

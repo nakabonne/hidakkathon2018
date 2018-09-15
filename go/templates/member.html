@@ -1,0 +1,73 @@
+{{ template "header.html" .}}
+
+<div class="row">
+    <div class="col-md-4 panel">
+        <div class="media">
+					<div class="media-left"><img id="authorIdImage" class="img-rounded " width="50" height="50" src="/photo/{{ .Author.ID }}"></div>
+            <div class="media-body">
+							<h3 id="auhtorNickName" class="media-heading">{{ .Author.NickName}}</h3>
+							<button type="button" class="btn btn-info btn-xs"><i class="glyphicon glyphicon-file"></i> <span id="authorPostCount" class="badge">{{ .MaxCount }}</span></button>
+            </div>
+						{{ if eq .User.ID .Author.ID }}
+                <div class="media form-group">
+									<form id="profileUpdateForm" action="/profileupdate/{{ .User.ID }}" method="GET">
+                        <input type="submit" class="btn btn-primary pull-right" value="編集" >
+                    </form>
+                </div>
+						{{ end }}
+        </div>
+    </div>
+    <div class="col-md-8 panel panel-primary">
+        <ul class="list-group">
+						{{ range $i, $article := .Articles }}
+						{{ $author := getUser $article.AuthorId }}
+                <li class="list-group-item">
+                    <article class="media">
+											<div class="element_icon media-left" ><img class="img-rounded" width="40" height="40" src="/photo/{{ $article.AuthorId}}"></div>
+                        <div class="element_body media-body" >
+													<div class="element_user media-left">{{ $author.NickName}}</div>
+													<div id="authorArticle{{ add $i 1 }}_updateString" class="element_datetime media-right">{{ deltaTime $article.UpdatedAt }}</div>
+													<h2 class="element_title media-heading"><a id="authorArticle{{ add $i 1 }}_Link" href="/article/{{ $article.ID }}">{{ $article.Title }}</a></h2>
+													<button type="button" class="btn btn-primary pull-right btn-xs "><i class="glyphicon glyphicon-thumbs-up"></i> <span id="authorArticle{{ add $i 1 }}_iineCount" class="badge">{{ getIineCount $article.ID }}</span></button>
+                            <div class="element_tag media" >
+                                <div class="element_tag media-left" >
+																		{{ $tagNames := getArticleTagNames $article.ID }}
+																		{{ range $j, $tagName := $tagNames }}
+																		<a id="authorArticle{{ add $i 1 }}_tagIdLink{{ add $j 1 }}" href="/tag/{{ $tagName.ID}}" class="element_tag_base" >
+																			<span id="authorArticle{{ add $i 1 }}_tagName{{ add $j 1 }}" class="element_tag_name label label-default" >{{ $tagName.Name }}</span>
+                                        </a>
+																		{{ end }}
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </li>
+						{{ end }}
+        </ul>
+    </div>
+</div>
+
+<div class="col-md-4 col-md-offset-4">
+    <nav>
+        <ul class="pagination">
+					  {{ if lt 1 .Page  }}
+						<li><a id="pageBackLink" href="/member/{{ .Author.ID }}?page={{ add .Page -1 }}"><span>«</span></a></li>
+						{{ end }}
+						{{ $page := .Page }}
+						{{ $Author := .Author}}
+						{{ range $i, $j := for .MaxPage }}
+						{{ $p := add $i 1 }}
+						    {{ if eq $page $p}}
+								<li class="active"><a id="currentPageLink" href="/member/{{ $Author.ID }}?page={{ $p }}">{{ $p }}</a></li>
+								{{ end }}
+						{{ end }}
+					  {{ if lt .Page .MaxPage  }}
+						<li><a id="pageNextLink" href="/member/{{ $Author.ID }}?page={{ add .Page 1}}"><span>»</span></a></li>
+						{{ end }}
+        </ul>
+    </nav>
+</div>
+<div class="col-md-4"></div>
+
+</body>
+</html>
