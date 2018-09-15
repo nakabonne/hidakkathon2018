@@ -263,8 +263,6 @@ func getPopularArticles() []PopularArticle {
       count(user_id) as iineCnt
     FROM
       iines
-    WHERE
-      updated_at >= DATE_ADD(NOW(), INTERVAL -5 MONTH)
     GROUP BY
       article_id
     ORDER BY
