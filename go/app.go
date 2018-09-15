@@ -161,7 +161,7 @@ func getTagCount(tagId int) int {
 	if tagCount != nil {
 		cnt, _ := tagCount[tagId]
 		// Debug
-		fmt.Printf("Load tagCount td : %d, cnt %d\n", tagId, cnt)
+		// fmt.Printf("Load tagCount td : %d, cnt %d\n", tagId, cnt)
 		return cnt
 	}
 
@@ -179,7 +179,7 @@ func getTagCount(tagId int) int {
 
 	cnt, _ := tagCount[tagId]
 	// Debug
-	fmt.Printf("New tagCount td : %d, cnt %d\n", tagId, cnt)
+	// fmt.Printf("New tagCount id : %d, cnt %d\n", tagId, cnt)
 	return cnt
 }
 
@@ -329,7 +329,7 @@ func InsArticle(userId int, title string, tags string, articleBody string, tx *s
 				}
 
 				// Debug
-				fmt.Printf("INSERT INTO tags (tagname) VALUES ( ? ) %v \n", tag)
+				// fmt.Printf("INSERT INTO tags (tagname) VALUES ( ? ) %v \n", tag)
 
 				result, err := stmt.Exec(tag)
 				if err != nil {
@@ -352,20 +352,20 @@ func InsArticle(userId int, title string, tags string, articleBody string, tx *s
 			}
 
 			// Debug
-			fmt.Printf("INSERT INTO article_relate_tags (article_id, tag_id) VALUES ( ?, ? ) %d, %d \n", articleId, articleTagId)
+			// fmt.Printf("INSERT INTO article_relate_tags (article_id, tag_id) VALUES ( ?, ? ) %d, %d \n", articleId, articleTagId)
 
 			_, ok := tagCount[articleTagId]
 			// Debug
-			fmt.Printf("_, ok := tagCount[articleTagId] : %v\n", ok)
+			// fmt.Printf("_, ok := tagCount[articleTagId] : %v\n", ok)
 
 			if !ok {
 				tagCount[articleTagId] = 1
 				// Debug
-				fmt.Printf("New TagId : %d\n", articleTagId)
+				// fmt.Printf("New TagId : %d\n", articleTagId)
 			} else {
 				tagCount[articleTagId]++
 				// Debug
-				fmt.Printf("Increment TagId : %d TagCount : %d\n", articleTagId, tagCount[articleTagId])
+				// fmt.Printf("Increment TagId : %d TagCount : %d\n", articleTagId, tagCount[articleTagId])
 			}
 		}
 	}
@@ -1136,11 +1136,15 @@ func GetWrite(w http.ResponseWriter, r *http.Request) {
 
 func PostWrite(w http.ResponseWriter, r *http.Request) {
 
+	fmt.Printf("PostWrite %v\n", r)
+
 	title := r.FormValue("title")
 	tags := r.FormValue("tags")
 	articleBody := r.FormValue("articleBody")
 
 	user := getCurrentUser(w, r)
+
+	fmt.Printf("PostWrite %v, %v, %v, %v\n", title, tags, articleBody, user)
 
 	tx, err := db.Begin()
 	if err != nil {
@@ -1154,7 +1158,7 @@ func PostWrite(w http.ResponseWriter, r *http.Request) {
 	articleId, err := InsArticle(user.ID, title, tags, articleBody, tx)
 
 	// Debug
-	fmt.Printf("Write Article articleID : %v, userID : %d, Title : %v, Tags : %v \n", articleId, user.ID, title, tags)
+	// fmt.Printf("Write Article articleID : %v, userID : %d, Title : %v, Tags : %v \n", articleId, user.ID, title, tags)
 
 	if err != nil {
 		headerInfo.Current = ""
