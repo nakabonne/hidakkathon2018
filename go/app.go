@@ -160,6 +160,8 @@ func getIineCount(articleId int) int {
 func getTagCount(tagId int) int {
 	if tagCount != nil {
 		cnt, _ := tagCount[tagId]
+		// Debug
+		fmt.Printf("tagId : %d, tagCount %d\n", tagId, cnt)
 		return cnt
 	}
 
@@ -176,6 +178,8 @@ func getTagCount(tagId int) int {
 	}
 
 	cnt, _ := tagCount[tagId]
+	// Debug
+	fmt.Printf("tagId : %d, tagCount %d\n", tagId, cnt)
 	return cnt
 }
 
@@ -347,8 +351,12 @@ func InsArticle(userId int, title string, tags string, articleBody string, tx *s
 			_, ok := tagCount[articleTagId]
 			if !ok {
 				tagCount[articleTagId] = 1
+				// Debug
+				fmt.Printf("New Tag Id : %d\n", articleTagId)
 			} else {
 				tagCount[articleTagId]++
+				// Debug
+				fmt.Printf("Increment TagId : %d TagCount : %d\n", articleTagId, tagCount[articleTagId])
 			}
 		}
 	}
