@@ -112,7 +112,6 @@ WHERE u.email = ? AND u.passhash = SHA2(CONCAT(?, s.salt), 512)`
 	session := getSession(r)
 	session.Values["user_id"] = user.ID
 	session.Save(r, w)
-
 	setLogin(user.ID)
 }
 
@@ -160,8 +159,6 @@ func getIineCount(articleId int) int {
 func getTagCount(tagId int) int {
 	if tagCount != nil {
 		cnt, _ := tagCount[tagId]
-		// Debug
-		// fmt.Printf("Load tagCount td : %d, cnt %d\n", tagId, cnt)
 		return cnt
 	}
 
@@ -178,29 +175,23 @@ func getTagCount(tagId int) int {
 	}
 
 	cnt, _ := tagCount[tagId]
-	// Debug
-	// fmt.Printf("New tagCount id : %d, cnt %d\n", tagId, cnt)
 	return cnt
 }
 
 func getArticle(articleId int) Article {
 	row := db.QueryRow(`SELECT * FROM articles WHERE id = ?`, articleId)
-
 	var id, authorId int
 	var title, description string
 	var createdAt, updatedAt time.Time
 	checkErr(row.Scan(&id, &authorId, &title, &description, &updatedAt, &createdAt))
-
 	return Article{id, authorId, title, description, updatedAt, createdAt}
 }
 
 func getArticleIineUsers(userId int) []int {
 	rows, err := db.Query(`SELECT user_id FROM iines WHERE article_id = ?`, userId)
-
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
-
 	var userIds []int
 	for rows.Next() {
 		var userId int
@@ -208,17 +199,14 @@ func getArticleIineUsers(userId int) []int {
 		userIds = append(userIds, userId)
 	}
 	rows.Close()
-
 	return userIds
 }
 
 func getArticleTagNames(articleId int) []TagName {
 	rows, err := db.Query(`SELECT tag_id FROM article_relate_tags WHERE article_id = ? ORDER BY tag_id ASC`, articleId)
-
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
-
 	var tagNames []TagName
 	for rows.Next() {
 		var tagId int
@@ -232,7 +220,6 @@ func getArticleTagNames(articleId int) []TagName {
 		tagNames = append(tagNames, TagName{tagId, tagName, createdAt})
 	}
 	rows.Close()
-
 	return tagNames
 }
 
@@ -279,7 +266,6 @@ func getPopularArticles() []PopularArticle {
       iineCnt DESC,
       article_id DESC
     LIMIT 5`)
-
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
@@ -290,7 +276,6 @@ func getPopularArticles() []PopularArticle {
 		popularArticles = append(popularArticles, PopularArticle{articleId, iineCount})
 	}
 	rows.Close()
-
 	return popularArticles
 }
 
@@ -309,7 +294,6 @@ func InsArticle(userId int, title string, tags string, articleBody string, tx *s
 	if err != nil {
 		return "", err
 	}
-
 	if tags != "" {
 		tagArray := strings.Split(tags, ",")
 		var articleTagIds []int
@@ -327,10 +311,6 @@ func InsArticle(userId int, title string, tags string, articleBody string, tx *s
 				if err != nil {
 					return "", err
 				}
-
-				// Debug
-				// fmt.Printf("INSERT INTO tags (tagname) VALUES ( ? ) %v \n", tag)
-
 				result, err := stmt.Exec(tag)
 				if err != nil {
 					return "", err
@@ -350,22 +330,11 @@ func InsArticle(userId int, title string, tags string, articleBody string, tx *s
 			if err != nil {
 				return "", err
 			}
-
-			// Debug
-			// fmt.Printf("INSERT INTO article_relate_tags (article_id, tag_id) VALUES ( ?, ? ) %d, %d \n", articleId, articleTagId)
-
 			_, ok := tagCount[articleTagId]
-			// Debug
-			// fmt.Printf("_, ok := tagCount[articleTagId] : %v\n", ok)
-
 			if !ok {
 				tagCount[articleTagId] = 1
-				// Debug
-				// fmt.Printf("New TagId : %d\n", articleTagId)
 			} else {
 				tagCount[articleTagId]++
-				// Debug
-				// fmt.Printf("Increment TagId : %d TagCount : %d\n", articleTagId, tagCount[articleTagId])
 			}
 		}
 	}
@@ -1135,31 +1104,20 @@ func GetWrite(w http.ResponseWriter, r *http.Request) {
 }
 
 func PostWrite(w http.ResponseWriter, r *http.Request) {
-
-	fmt.Printf("PostWrite %v\n", r)
-
 	title := r.FormValue("title")
 	tags := r.FormValue("tags")
 	articleBody := r.FormValue("articleBody")
-
 	user := getCurrentUser(w, r)
-
-	fmt.Printf("PostWrite %v, %v, %v, %v\n", title, tags, articleBody, user)
 
 	tx, err := db.Begin()
 	if err != nil {
 		return
 	}
-
 	defer func() {
 		tx.Rollback()
 	}()
 
 	articleId, err := InsArticle(user.ID, title, tags, articleBody, tx)
-
-	// Debug
-	// fmt.Printf("Write Article articleID : %v, userID : %d, Title : %v, Tags : %v \n", articleId, user.ID, title, tags)
-
 	if err != nil {
 		headerInfo.Current = ""
 		headerInfo.Write = false
