@@ -1135,6 +1135,7 @@ func GetWrite(w http.ResponseWriter, r *http.Request) {
 }
 
 func PostWrite(w http.ResponseWriter, r *http.Request) {
+
 	title := r.FormValue("title")
 	tags := r.FormValue("tags")
 	articleBody := r.FormValue("articleBody")
@@ -1150,7 +1151,11 @@ func PostWrite(w http.ResponseWriter, r *http.Request) {
 		tx.Rollback()
 	}()
 
+	// Debug
+	fmt.Printf("Write Article %d, %v, %v \n", user.ID, title, tags)
+
 	articleId, err := InsArticle(user.ID, title, tags, articleBody, tx)
+
 	if err != nil {
 		headerInfo.Current = ""
 		headerInfo.Write = false
