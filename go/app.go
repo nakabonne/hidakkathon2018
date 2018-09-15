@@ -91,7 +91,7 @@ var (
 	ErrContentNotFound = errors.New("content not found")
 )
 
-var iineCnt map[int]int
+var iineCnt = map[int]int{}
 
 func authenticate(w http.ResponseWriter, r *http.Request, email, passwd string) {
 	query := `SELECT u.id AS id, nick_name AS nick_name, u.email AS email
