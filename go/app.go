@@ -324,6 +324,9 @@ func InsArticle(userId int, title string, tags string, articleBody string, tx *s
 				checkErr(err)
 				articleTagIds = append(articleTagIds, tagId)
 			} else {
+				// Debug
+				fmt.Println("INSERT INTO tags (tagname) VALUES ( ? )")
+
 				query = "INSERT INTO tags (tagname) VALUES ( ? )"
 				stmt, err = tx.Prepare(query)
 				if err != nil {
@@ -342,6 +345,9 @@ func InsArticle(userId int, title string, tags string, articleBody string, tx *s
 		}
 
 		for _, articleTagId := range articleTagIds {
+			// Debug
+			fmt.Println("INSERT INTO article_relate_tags (article_id, tag_id) VALUES ( ?, ? )")
+
 			query = "INSERT INTO article_relate_tags (article_id, tag_id) VALUES ( ?, ? )"
 			stmt, err = tx.Prepare(query)
 			_, err := stmt.Exec(articleId, articleTagId)
@@ -349,10 +355,13 @@ func InsArticle(userId int, title string, tags string, articleBody string, tx *s
 				return "", err
 			}
 			_, ok := tagCount[articleTagId]
+			// Debug
+			fmt.Printf("_, ok := tagCount[articleTagId] : %v\n", ok)
+
 			if !ok {
 				tagCount[articleTagId] = 1
 				// Debug
-				fmt.Printf("New Tag Id : %d\n", articleTagId)
+				fmt.Printf("New TagId : %d\n", articleTagId)
 			} else {
 				tagCount[articleTagId]++
 				// Debug
