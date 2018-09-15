@@ -344,6 +344,12 @@ func InsArticle(userId int, title string, tags string, articleBody string, tx *s
 			if err != nil {
 				return "", err
 			}
+			_, ok := tagCount[articleTagId]
+			if !ok {
+				tagCount[articleTagId] = 1
+			} else {
+				tagCount[articleTagId]++
+			}
 		}
 	}
 
