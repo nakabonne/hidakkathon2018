@@ -260,7 +260,7 @@ func getPopularArticles() []PopularArticle {
 	rows, err := db.Query(`
     SELECT
       article_id,
-      count(user_id) as iineCnt
+      count(id) as iineCnt
     FROM
       iines
     GROUP BY
