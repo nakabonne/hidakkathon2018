@@ -161,7 +161,7 @@ func getTagCount(tagId int) int {
 	if tagCount != nil {
 		cnt, _ := tagCount[tagId]
 		// Debug
-		fmt.Printf("tagId : %d, tagCount %d\n", tagId, cnt)
+		fmt.Printf("Load tagCount td : %d, cnt %d\n", tagId, cnt)
 		return cnt
 	}
 
@@ -179,7 +179,7 @@ func getTagCount(tagId int) int {
 
 	cnt, _ := tagCount[tagId]
 	// Debug
-	fmt.Printf("tagId : %d, tagCount %d\n", tagId, cnt)
+	fmt.Printf("New tagCount td : %d, cnt %d\n", tagId, cnt)
 	return cnt
 }
 
@@ -284,11 +284,9 @@ func getPopularArticles() []PopularArticle {
 		checkErr(err)
 	}
 	popularArticles := make([]PopularArticle, 0, 5)
-	fmt.Println("start!!!!!!!!!!!!!!!!!!")
 	for rows.Next() {
 		var articleId, iineCount int
 		checkErr(rows.Scan(&articleId, &iineCount))
-		fmt.Println("article is", articleId)
 		popularArticles = append(popularArticles, PopularArticle{articleId, iineCount})
 	}
 	rows.Close()
@@ -324,14 +322,15 @@ func InsArticle(userId int, title string, tags string, articleBody string, tx *s
 				checkErr(err)
 				articleTagIds = append(articleTagIds, tagId)
 			} else {
-				// Debug
-				fmt.Println("INSERT INTO tags (tagname) VALUES ( ? )")
-
 				query = "INSERT INTO tags (tagname) VALUES ( ? )"
 				stmt, err = tx.Prepare(query)
 				if err != nil {
 					return "", err
 				}
+
+				// Debug
+				fmt.Printf("INSERT INTO tags (tagname) VALUES ( ? ) %v \n", tag)
+
 				result, err := stmt.Exec(tag)
 				if err != nil {
 					return "", err
@@ -345,15 +344,16 @@ func InsArticle(userId int, title string, tags string, articleBody string, tx *s
 		}
 
 		for _, articleTagId := range articleTagIds {
-			// Debug
-			fmt.Println("INSERT INTO article_relate_tags (article_id, tag_id) VALUES ( ?, ? )")
-
 			query = "INSERT INTO article_relate_tags (article_id, tag_id) VALUES ( ?, ? )"
 			stmt, err = tx.Prepare(query)
 			_, err := stmt.Exec(articleId, articleTagId)
 			if err != nil {
 				return "", err
 			}
+
+			// Debug
+			fmt.Printf("INSERT INTO article_relate_tags (article_id, tag_id) VALUES ( ?, ? ) %d, %d \n", articleId, articleTagId)
+
 			_, ok := tagCount[articleTagId]
 			// Debug
 			fmt.Printf("_, ok := tagCount[articleTagId] : %v\n", ok)
