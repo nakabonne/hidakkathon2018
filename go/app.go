@@ -21,6 +21,8 @@ import (
 	"sync"
 	"time"
 
+	_ "net/http/pprof"
+
 	"github.com/go-sql-driver/mysql"
 	"github.com/gomodule/redigo/redis"
 	"github.com/gorilla/context"
@@ -1317,6 +1319,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect to Redis: %s.", err.Error())
 	}
+
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
+
 	r := mux.NewRouter()
 	r.Use(recoverMiddleware)
 	l := r.Path("/login").Subrouter()
