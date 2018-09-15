@@ -154,6 +154,7 @@ func getIineCount(articleId int) int {
 }
 
 func getTagCount(tagId int) int {
+	// TODO
 	row := db.QueryRow(`SELECT COUNT(*) as cnt FROM article_relate_tags WHERE tag_id = ?`, tagId)
 	cnt := new(int)
 	err := row.Scan(cnt)
@@ -262,11 +263,11 @@ func getPopularArticles() []PopularArticle {
 		checkErr(err)
 	}
 	popularArticles := make([]PopularArticle, 0, 5)
-  fmt.Println("start!!!!!!!!!!!!!!!!!!")
+	fmt.Println("start!!!!!!!!!!!!!!!!!!")
 	for rows.Next() {
 		var articleId, iineCount int
 		checkErr(rows.Scan(&articleId, &iineCount))
-    fmt.Println("article is", articleId)
+		fmt.Println("article is", articleId)
 		popularArticles = append(popularArticles, PopularArticle{articleId, iineCount})
 	}
 	rows.Close()
