@@ -398,6 +398,12 @@ func UpdArticle(userId int, articleId int, title string, tags string, articleBod
 			if err != nil {
 				return err
 			}
+			_, ok := tagCount[articleTagId]
+			if !ok {
+				tagCount[articleTagId] = 1
+			} else {
+				tagCount[articleTagId]++
+			}
 		}
 	}
 
