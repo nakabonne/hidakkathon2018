@@ -851,9 +851,16 @@ func GetTags(w http.ResponseWriter, r *http.Request) {
 func GetTag(w http.ResponseWriter, r *http.Request) {
 	user := getCurrentUser(w, r)
 	tagId := mux.Vars(r)["tag_id"]
-	row := db.QueryRow("SELECT COUNT(*) as cnt FROM article_relate_tags WHERE tag_id = ?", tagId)
+
 	var cnt int
-	checkErr(row.Scan(&cnt))
+	if tagCount != nil {
+		c, err := strconv.Atoi(tagId)
+		checkErr(err)
+		cnt, _ = tagCount[c]
+	} else {
+		row := db.QueryRow("SELECT COUNT(*) as cnt FROM article_relate_tags WHERE tag_id = ?", tagId)
+		checkErr(row.Scan(&cnt))
+	}
 
 	page, _ := strconv.Atoi(r.FormValue("page"))
 	pageSize := 20
