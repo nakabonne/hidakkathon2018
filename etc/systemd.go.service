@@ -1,0 +1,13 @@
+[Unit]
+Description=Hitme-go
+After=syslog.target
+
+[Service]
+WorkingDirectory=/var/www/html/webapp/go
+ExecStart=/usr/bin/make run
+EnvironmentFile=/var/www/html/webapp/env.sh
+User=ubuntu
+Group=ubuntu
+
+[Install]
+WantedBy=multi-user.target
