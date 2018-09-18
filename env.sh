@@ -1,0 +1,2 @@
+GOPATH=/var/www/html/webapp/go
+HIDAKKATHON_DB_HOST='10.140.0.5'
