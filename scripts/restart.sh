@@ -17,6 +17,6 @@ cd go
 make build
 sudo systemctl restart systemd.go.service
 
-echo "$(tput setaf 2)########################$(tput sgr0)"
-echo "$(tput setaf 2)#Restart Succeeded!!! ✔︎#$(tput sgr0)"
-echo "$(tput setaf 2)########################$(tput sgr0)"
+echo "$(tput setaf 2)############################$(tput sgr0)"
+echo "$(tput setaf 2)## Restart Succeeded!!! ✔︎ ##$(tput sgr0)"
+echo "$(tput setaf 2)############################$(tput sgr0)"
