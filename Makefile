@@ -24,3 +24,6 @@ mysqldumpslow:
 
 restart-mysql:
 	sudo /etc/init.d/mysql restart
+
+syslog:
+	sudo journalctl -e -u systemd.go.service
