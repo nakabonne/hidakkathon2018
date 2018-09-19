@@ -575,8 +575,10 @@ func getLoginUsers() []int {
 	keys, _ := redis.Strings(redisClient.Do("KEYS", "login_*"))
 	for _, key := range keys {
 		loginTime, _ := redis.Int(redisClient.Do("GET", key))
+		fmt.Println("key is", key)
 		if time.Now().UnixNano()/int64(time.Millisecond)-int64(loginTime) < 60*60*1000 {
 			userId, _ := strconv.Atoi(key[6:])
+			fmt.Println("add ", userId)
 			onLineUsers = append(onLineUsers, userId)
 		}
 	}
