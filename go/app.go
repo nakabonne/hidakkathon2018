@@ -162,7 +162,7 @@ func getTagCount(tagId int) int {
 	fmt.Println("existsは", exists)
 	checkErr(err)
 
-	if exists != nil {
+	if exists == 1 {
 		cnt, err := redis.Int(redisClient.Do("GET", tagId))
 		checkErr(err)
 		return cnt
@@ -346,7 +346,7 @@ func InsArticle(userId int, title string, tags string, articleBody string, tx *s
 			}
 			exists, err := redisClient.Do("EXISTS", articleTagId)
 			fmt.Println("exitsは", exists)
-			if exists == nil {
+			if exists == 1 {
 				_, err := redisClient.Do("SET", articleTagId, 1)
 				checkErr(err)
 			} else {
@@ -414,7 +414,7 @@ func UpdArticle(userId int, articleId int, title string, tags string, articleBod
 			}
 			exists, err := redisClient.Do("EXISTS", articleTagId)
 			fmt.Println("exitsは", exists)
-			if exists == nil {
+			if exists == 1 {
 				_, err := redisClient.Do("SET", articleTagId, 1)
 				checkErr(err)
 			} else {
