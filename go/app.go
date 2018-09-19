@@ -158,11 +158,16 @@ func getIineCount(articleId int) int {
 }
 
 func getTagCount(tagId int) int {
-	if tagCount != nil {
-		cnt, _ := tagCount[tagId]
+	exists, err := redisClient.Do("EXISTS", tagId)
+	fmt.Println("existsは", exists)
+	checkErr(err)
+
+	if exists != nil {
+		cnt, err := redis.Int(redisClient.Do("GET", tagId))
+		checkErr(err)
 		return cnt
 	}
-	tagCount = map[int]int{}
+	//tagCount = map[int]int{}
 	rows, err := db.Query("select tag_id as id, count(*) as cnt from article_relate_tags group by tag_id;")
 	checkErr(err)
 
@@ -173,10 +178,14 @@ func getTagCount(tagId int) int {
 		var cnt int
 		err := rows.Scan(&id, &cnt)
 		checkErr(err)
+		_, err = redisClient.Do("SET", id, cnt)
 
-		tagCount[id] = cnt
+		//tagCount[id] = cnt
 	}
-	cnt, _ := tagCount[tagId]
+	//cnt, _ := tagCount[tagId]
+	cnt, err := redis.Int(redisClient.Do("GET", tagId))
+	checkErr(err)
+
 	return cnt
 }
 
@@ -335,11 +344,14 @@ func InsArticle(userId int, title string, tags string, articleBody string, tx *s
 			if err != nil {
 				return "", err
 			}
-			_, ok := tagCount[articleTagId]
-			if !ok {
-				tagCount[articleTagId] = 1
+			exists, err := redisClient.Do("EXISTS", articleTagId)
+			fmt.Println("exitsは", exists)
+			if exists == nil {
+				_, err := redisClient.Do("SET", articleTagId, 1)
+				checkErr(err)
 			} else {
-				tagCount[articleTagId]++
+				_, err := redisClient.Do("INCR", articleTagId)
+				checkErr(err)
 			}
 		}
 	}
@@ -400,11 +412,14 @@ func UpdArticle(userId int, articleId int, title string, tags string, articleBod
 			if err != nil {
 				return err
 			}
-			_, ok := tagCount[articleTagId]
-			if !ok {
-				tagCount[articleTagId] = 1
+			exists, err := redisClient.Do("EXISTS", articleTagId)
+			fmt.Println("exitsは", exists)
+			if exists == nil {
+				_, err := redisClient.Do("SET", articleTagId, 1)
+				checkErr(err)
 			} else {
-				tagCount[articleTagId]++
+				_, err := redisClient.Do("INCR", articleTagId)
+				checkErr(err)
 			}
 		}
 	}
